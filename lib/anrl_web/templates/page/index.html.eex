@@ -1,0 +1,16 @@
+<section>
+  <%= for {store, img_paths} <- @ads do %>
+    <div>
+      <h2><%= store %></h2>
+
+      <%# TODO: %>
+      <%# These  images  are  huge,  so  it  would be  prudent %>
+      <%# to  show  a thumbnail  instead,  and  load the  full %>
+      <%# resolution one if someone clicks on it. %>
+
+      <%= for path <- img_paths do %>
+        <%= tag(:img, [class: "ad-image", src: path]) %>
+      <% end %>
+    </div>
+  <% end %>
+</section>
