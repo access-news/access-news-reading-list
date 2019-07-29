@@ -11,7 +11,7 @@ defmodule Anrl.Application do
       # Start the Ecto repository
       Anrl.Repo,
       # Start the endpoint when the application starts
-      AnrlWeb.Endpoint
+      AnrlWeb.Endpoint,
       # Starts a worker by calling: Anrl.Worker.start_link(arg)
       # {Anrl.Worker, arg},
     ]

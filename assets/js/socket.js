@@ -8,7 +8,8 @@
 // from the params if you are not using authentication.
 import {Socket} from "phoenix"
 
-let socket = new Socket("/socket", {params: {token: window.userToken}})
+// let socket = new Socket("/socket", {params: {token: window.userToken}})
+let socket = new Socket("/socket")
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -55,9 +56,23 @@ let socket = new Socket("/socket", {params: {token: window.userToken}})
 socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel("topic:subtopic", {})
+let channel = socket.channel("ads:changed", {})
+
 channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })
   .receive("error", resp => { console.log("Unable to join", resp) })
+
+channel.on("load_ads", payload => {
+  location.reload(true)
+  // let p = document.createElement("p")
+  // p.textContent = payload.body
+  // document.querySelector("#socket_test").appendChild(p)
+})
+
+channel.on("another", payload => {
+  let p = document.createElement("p")
+  p.textContent = payload.body
+  document.querySelector("#socket_test").appendChild(p)
+})
 
 export default socket

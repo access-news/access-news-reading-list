@@ -2,7 +2,7 @@ defmodule AnrlWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", AnrlWeb.RoomChannel
+  channel "ads:changed", AnrlWeb.AdsChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
