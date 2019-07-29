@@ -82,8 +82,8 @@ A sample socket:
 }
 ```
 
-`broadcast/3`  checks whether  `:joined` is  `true`,
-but it seems superfluous (see [PR #3501](https://github.com/phoenixframework/phoenix/pull/3501)).
+`broadcast/3`  checks whether  `:joined` is  `true`;
+seems superfluous, but it isn't (see [PR #3501](https://github.com/phoenixframework/phoenix/pull/3501)).
 
 ## Project start instructions
 
