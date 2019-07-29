@@ -3,6 +3,6 @@ defmodule AnrlWeb.AdsChannel do
 
   def join("ads:changed", payload, socket) do
     # require IEx; IEx.pry
-    {:ok, socket}
+    {:ok, %{body: "balabab"}, socket}
   end
 end

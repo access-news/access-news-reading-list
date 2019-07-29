@@ -6,7 +6,7 @@ defmodule Anrl.Ads do
   def list() do
     # hard_config = %{
     # }
-    images_dir = "priv/static/images"
+    images_dir = "priv/static/images/ads"
     image_paths_map = %{}
 
     Enum.reduce(

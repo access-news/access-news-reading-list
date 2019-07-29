@@ -16,6 +16,7 @@ pkgs.mkShell {
     nodejs-12_x
     git
     inotify-tools
+    imagemagick7
   ];
 
   shellHook = ''
