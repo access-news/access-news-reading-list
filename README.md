@@ -1,6 +1,8 @@
 # Access News Reading Lists
 
-## Note on reloading the page when ads change
+## Notes on pushing changes when ads change on the backend
+
+### 2019-07-21_1232
 
 The notion is to reload when any content changes on the backend. Server Sent Events would have been more lightweight, but used Phoenix channels (i.e., websockets) as it would have to be set up anyway at one point.
 The ads are currently images in `./assets/static/images` (and as a corollary, `./priv/static/images`), and a channel message ("load_ads") will be broadcasted manually to reload pages.
@@ -52,7 +54,7 @@ The ads are currently images in `./assets/static/images` (and as a corollary, `.
 > end
 > ```
 
-### `Phoenix.Channel.(broadcast/3|push/3)`
+#### `Phoenix.Channel.(broadcast/3|push/3)`
 
 Broadcasts only  need `:pubsub_server`  and `:topic`
 from  the `Phoenix.Socket`  struct, and  pushes need
@@ -84,6 +86,46 @@ A sample socket:
 
 `broadcast/3`  checks whether  `:joined` is  `true`;
 seems superfluous, but it isn't (see [PR #3501](https://github.com/phoenixframework/phoenix/pull/3501)).
+
+### 2019-07-30_0824 Switch to JSON API or LiveView?
+
+Trying the  following workflow to deal  with pushing
+updates in the backend:
+
+1.  `/ads`  routes  allow  updating ads  (image  uploads
+    with  metadata),  loading   existing  sections  from
+    `ads.json`.
+
+2.  Backend "compresses" images  for quicker page loads,
+    saves   files   to  `priv/static/images/`,   updates
+    `ads.json`.
+
+3.  Changed  and new  store sections  are pushed  to the
+    front end to be updated.
+
+As  a corollary,  the  initial  pageloads (main  and
+`/ads`) could be generated  from `ads.json` in `eex`
+templates, but as the data is already in a JSON, why
+not just make a JSON API instead?
+
+LiveView would also work, but I would like to retain
+the flexibility to use another frontend framework in
+the future. With that said, probably going to create
+a git branch to try it out.
+
+> NOTE
+>
+> When    going   with    the    JSON   API,    **CSRF
+> protection  has  to  be  implemented  again  in  the
+> frontend**. `Phoenix.HTML.Form`s  take care  of that
+> automatically,  and  forms  in `/ads`  shouldn't  be
+> public (or the API itself). LiveView and traditional
+> `eex` templates  have the benefit of  taking care of
+> this in the background.
+
+*To make things simple, administration is done from
+backend for  now, and frontend will  be kept public,
+until users management added.*
 
 ## Project start instructions
 
