@@ -36,5 +36,6 @@ npm-debug.log
 # Ignore artifacts produced by `nix-shell` (and `shell.nix`)
 .nix-shell
 
+_ads/input/
 *.jpg
 *.png
