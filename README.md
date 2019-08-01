@@ -2,6 +2,122 @@
 
 ## Notes on pushing changes when ads change on the backend
 
+### 2019-07-31_1133 Backend "upload"
+
++ `./_ads/form/`
+
+  Temporary  storage of  the existing  store sections,
+  each  store   folder  with  a   `meta.json`  holding
+  metadata that  would be taken from  a frontend input
+  (such as the full name of the store chains).
+
++ `./_ads/input`
+
+  Emulates an HTML form submission.
+
+#### Current workflow
+
+1. Copy   store   ad   images   to   their   respective
+   `./_ads/form` folder, or create a new directory with
+   `meta.json` for a new chain.
+
+2. Copy needed folder to `./_ads/input`.
+
+> Step  1.  could  be skipped,  but  reminding  myself
+> that only  `./_ads/form` is in source  control. (The
+> `meta.json` files in the dirs to be precise.)
+
+3. `Anrl.Ads.list()`
+
+   Generate a map from `./_ads/input`'s contents, which
+   structure is very close to `ads.json`'s.
+
+   Sample output:
+
+   ```elixir
+   %{
+     "food-source" => %{
+       "paths" => ["_ads/input/food-source/1.png",
+        "_ads/input/food-source/2.png"],
+       "store" => "Food Source"
+     },
+     # ...
+   }
+
+   From `ads.json`:
+
+   ```json
+   {
+     "food-source": {
+       "paths": {
+         "1": "/images/ads/38847be3-c44e-4d63-82cb-3aabb822b537.png",
+         "2": "/images/ads/ceb69f02-9362-4047-908b-ab5c87de9204.png"
+       },
+       "store": "Food Source"
+     }
+   }
+   ```
+
+4. `|> Anrl.Ads.submit_ads()`
+
+   Updates `ads.json` from step 3's output, and submits
+   a channel  update to  the frontend. The  update only
+   difference from `ads.json` in a "status" attribute:
+
+   ```elixir
+   %{
+     "food-source" => %{
+       "paths" => %{
+         "1" => "/images/ads/38847be3-c44e-4d63-82cb-3aabb822b537.png",
+         "2" => "/images/ads/ceb69f02-9362-4047-908b-ab5c87de9204.png"
+       },
+       "status" => "update", # or "new"
+       "store" => "Food Source"
+     },
+     # ...
+   }
+   ```
+
+### 2019-07-30_0824 Switch to JSON API or LiveView?
+
+Trying the  following workflow to deal  with pushing
+updates in the backend:
+
+1.  `/ads`  routes  allow  updating ads  (image  uploads
+    with  metadata),  loading   existing  sections  from
+    `ads.json`.
+
+2.  Backend "compresses" images  for quicker page loads,
+    saves   files   to  `priv/static/images/`,   updates
+    `ads.json`.
+
+3.  Changed  and new  store sections  are pushed  to the
+    front end to be updated.
+
+As  a corollary,  the  initial  pageloads (main  and
+`/ads`) could be generated  from `ads.json` in `eex`
+templates, but as the data is already in a JSON, why
+not just make a JSON API instead?
+
+LiveView would also work, but I would like to retain
+the flexibility to use another frontend framework in
+the future. With that said, probably going to create
+a git branch to try it out.
+
+> NOTE
+>
+> When    going   with    the    JSON   API,    **CSRF
+> protection  has  to  be  implemented  again  in  the
+> frontend**. `Phoenix.HTML.Form`s  take care  of that
+> automatically,  and  forms  in `/ads`  shouldn't  be
+> public (or the API itself). LiveView and traditional
+> `eex` templates  have the benefit of  taking care of
+> this in the background.
+
+*To make things simple, administration is done from
+backend for  now, and frontend will  be kept public,
+until users management added.*
+
 ### 2019-07-21_1232
 
 The notion is to reload when any content changes on the backend. Server Sent Events would have been more lightweight, but used Phoenix channels (i.e., websockets) as it would have to be set up anyway at one point.
@@ -86,46 +202,6 @@ A sample socket:
 
 `broadcast/3`  checks whether  `:joined` is  `true`;
 seems superfluous, but it isn't (see [PR #3501](https://github.com/phoenixframework/phoenix/pull/3501)).
-
-### 2019-07-30_0824 Switch to JSON API or LiveView?
-
-Trying the  following workflow to deal  with pushing
-updates in the backend:
-
-1.  `/ads`  routes  allow  updating ads  (image  uploads
-    with  metadata),  loading   existing  sections  from
-    `ads.json`.
-
-2.  Backend "compresses" images  for quicker page loads,
-    saves   files   to  `priv/static/images/`,   updates
-    `ads.json`.
-
-3.  Changed  and new  store sections  are pushed  to the
-    front end to be updated.
-
-As  a corollary,  the  initial  pageloads (main  and
-`/ads`) could be generated  from `ads.json` in `eex`
-templates, but as the data is already in a JSON, why
-not just make a JSON API instead?
-
-LiveView would also work, but I would like to retain
-the flexibility to use another frontend framework in
-the future. With that said, probably going to create
-a git branch to try it out.
-
-> NOTE
->
-> When    going   with    the    JSON   API,    **CSRF
-> protection  has  to  be  implemented  again  in  the
-> frontend**. `Phoenix.HTML.Form`s  take care  of that
-> automatically,  and  forms  in `/ads`  shouldn't  be
-> public (or the API itself). LiveView and traditional
-> `eex` templates  have the benefit of  taking care of
-> this in the background.
-
-*To make things simple, administration is done from
-backend for  now, and frontend will  be kept public,
-until users management added.*
 
 ## Project start instructions
 
