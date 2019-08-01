@@ -8,6 +8,12 @@ defmodule Anrl.Ads do
   # Choosing map  as output to be  able to use it  for a
   # JSON API later
 
+  def read_json(path) do
+    path
+    |> File.read!()
+    |> Jason.decode!()
+  end
+
   # submitted = %{ store_id => %{ paths => [], ... }}
   # see `list/0`'s output at the bottom
   def submit_ads(submitted) do
@@ -35,6 +41,10 @@ defmodule Anrl.Ads do
         { ads, update }
       ) ->
 
+        # Adding status to the  update payload is not strictly
+        # necessary (becuase the frontend could figure it out;
+        # if no HTML element with `store_id`, then create it),
+        # but it doesn't add much overhead and more explicit.
         status =
           case Map.has_key?(ads, store_id) do
             false ->
@@ -67,7 +77,7 @@ defmodule Anrl.Ads do
   ) do
     Enum.each(
       paths_with_page_numbers,
-      fn { page_number, src_path } = x ->
+      fn { _page_number, src_path } = x ->
 
         IO.inspect(x)
 
@@ -146,16 +156,9 @@ defmodule Anrl.Ads do
   end
 
   defp get_page_number(image_path) do
-    page_number  =
       image_path
       |> Path.basename()
       |> Path.rootname()
-  end
-
-  def read_json(path) do
-    path
-    |> File.read!()
-    |> Jason.decode!()
   end
 
   # --- TEMPORARY ------------------------------------------------------
@@ -164,31 +167,30 @@ defmodule Anrl.Ads do
 
   def list do
 
-    store_path_tuples =
-      @ads_in_dir
-      |> File.ls!()
-      |> Enum.reduce(%{}, fn dir, acc ->
+    @ads_in_dir
+    |> File.ls!()
+    |> Enum.reduce(%{}, fn dir, acc ->
 
-           rel_dir = Path.join(@ads_in_dir, dir)
-           meta = Path.join(rel_dir, "meta.json") |> read_json()
+          rel_dir = Path.join(@ads_in_dir, dir)
+          meta = Path.join(rel_dir, "meta.json") |> read_json()
 
-           image_paths =
-             File.ls!(rel_dir)
-             |> Enum.reduce([], fn file, acc ->
-                  case file == "meta.json" do
-                    true ->
-                      acc
-                    false ->
-                      [ Path.join(rel_dir, file) | acc ]
-                  end
-                end)
+          image_paths =
+            File.ls!(rel_dir)
+            |> Enum.reduce([], fn file, acc ->
+                case file == "meta.json" do
+                  true ->
+                    acc
+                  false ->
+                    [ Path.join(rel_dir, file) | acc ]
+                end
+              end)
 
-           Map.put(
-             acc,
-             dir,
-             Map.put(meta, "paths", image_paths)
-           )
-         end)
+          Map.put(
+            acc,
+            dir,
+            Map.put(meta, "paths", image_paths)
+          )
+        end)
 
     # %{
     #   "food-source" => %{
