@@ -1,6 +1,9 @@
 defmodule AnrlWeb.PageView do
   use AnrlWeb, :view
 
-  # def render("index.json", %{data: data}) do
-  # end
+  def src_small(src_path) do
+    src_path
+    |> Path.rootname()
+    |> (&<>/2).("-small.jpg")
+  end
 end

@@ -19,7 +19,9 @@ defmodule AnrlWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    resources "/ads", AdsController, only: [:index, :new, :create, :delete]
+    post "/reserve", PageController, :reserve
+    # post "/reserve_all", PageController, :reserve
+    # resources "/ads", AdsController, only: [:index, :new, :create, :delete]
   end
 
   # Other scopes may use custom stacks.

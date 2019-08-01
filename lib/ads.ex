@@ -14,13 +14,17 @@ defmodule Anrl.Ads do
     |> Jason.decode!()
   end
 
+  def read_ads() do
+    @ads_json_location
+    |> read_json()
+  end
+
   # submitted = %{ store_id => %{ paths => [], ... }}
   # see `list/0`'s output at the bottom
   def submit_ads(submitted) do
 
     { ads, update } =
-      @ads_json_location
-      |> read_json()    #=> ads
+      read_ads()
       |> winnow(submitted)
 
     ads

@@ -57,6 +57,17 @@ socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
 let channel = socket.channel("ads:changed", {})
+let reserveButtons = document.getElementsByClassName("reserve-button")
+
+for (var i = 0; i < reserveButtons.length; i++) {
+  reserveButtons[i].addEventListener(
+    'click',
+    event => {
+      channel.push("reserve_clicked", { id: event.target.value })
+    },
+    false // this is the default
+  );
+}
 
 channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })
@@ -69,10 +80,8 @@ channel.on("load_ads", payload => {
   // document.querySelector("#socket_test").appendChild(p)
 })
 
-channel.on("another", payload => {
-  let p = document.createElement("p")
-  p.textContent = payload.body
-  document.querySelector("#socket_test").appendChild(p)
+channel.on("reserve_page", payload => {
+  document.getElementById(payload.id).className = "reserved-page"
 })
 
 export default socket
