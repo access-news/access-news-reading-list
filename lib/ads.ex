@@ -134,7 +134,7 @@ defmodule Anrl.Ads do
           [ "convert",
             image_path,
             "-quality",
-            "16",
+            "7",
             Path.join(@ads_out_dir, new_filename_small)
           ]
         )
