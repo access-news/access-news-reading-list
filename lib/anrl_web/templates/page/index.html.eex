@@ -11,9 +11,9 @@
       <%# to  show  a thumbnail  instead,  and  load the  full %>
       <%# resolution one if someone clicks on it. %>
 
-      <%= for path <- img_paths do %>
-        <%= tag(:img, [class: "ad-image", src: path]) %>
-      <% end %>
+      <%# <%= for path <- img_paths do %1> %>
+      <%#   <%= tag(:img, [class: "ad-image", src: path]) %1> %>
+      <%# <% end %1> %>
     </div>
   <% end %>
 </section>
