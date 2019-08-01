@@ -8,170 +8,148 @@ defmodule Anrl.Ads do
   # Choosing map  as output to be  able to use it  for a
   # JSON API later
 
-  # %{"A store" => "/absolute/path"}
+  # submitted = %{ store_id => %{ paths => [], ... }}
+  # see `list/0`'s output at the bottom
   def submit_ads(submitted) do
 
-    submitted
-    |> winnow()
-    |> add_new()
-    |> update_exisiting()
+    { ads, update } =
+      @ads_json_location
+      |> read_json()    #=> ads
+      |> winnow(submitted)
+
+    ads
+    |> Jason.encode!()
+    |> Jason.Formatter.pretty_print()
+    |> (&File.write(@ads_json_location, &1)).()
+
+    update
   end
 
-  def winnow(submitted) do
+  def winnow(ads, submitted) do
 
-    ads = read_json(@ads_json_location)
+    Enum.reduce(
+      submitted,
+      { ads, %{} },
+      fn(
+        { store_id, _meta } = ads_entry_tuple,
+        { ads, update }
+      ) ->
 
-    submitted
-    |> Enum.group_by(fn {key, _value} ->
-         Map.has_key?(ads, key)
-       end)
-      # %{
-      #   true: [
-      #     {"safeway",
-      #     %{
-      #       "paths" => ["_ads/input/safeway/2.jpg"]
-      #     }}
-      #   ],
-      #   false: [
-      #     # { ... }
-      #   ]
-      # }
+        status =
+          case Map.has_key?(ads, store_id) do
+            false ->
+              "new"
+            true  ->
+              delete_previous_images(ads[store_id])
+              "update"
+          end
 
-      # The merge  is needed  because if  there is  only new
-      # input then there will be  no :true  keyword entry in
-      # the output  (and vice  versa, if  there is  only new
-      # content, there will be no :false). `apply_changes/2`
-      # will just return with an empty list.
-      #
-      # This  way `add_new/1`  and `update_exisiting/1`  can
-      # just match on the success paths.
-    |> (&Map.merge(%{ true: [], false: []}, &1)).()
-    |> Map.merge(:ads_json, ads)
-  end
+        new_ads_entry = process_submitted(ads_entry_tuple)
 
-  # kw = keyword list (see `winnow/1`)
-  defp add_new(%{ false: ad_kw, ads_json: ads } = winnowed) do
+        {
+          # update ads
+          Map.merge(ads, new_ads_entry),
 
-    new_ads =
-      ads
-      |> Map.put("status", "new")
-      # + 2. copy new ones
-      # + 3. create resized version
-      |> Map.merge( apply_changes(ad_kw) )
-      |> (&Map.put(winnowed, :ads_json, &1)).()
-    # 4. push update to create the section on the frontend
-  end
+          # update update
+          new_ads_entry
+          |> Map.update!(store_id, &Map.put(&1, "status", status))
+          |> (&Map.merge(update, &1)).()
+        }
 
-  defp update_exisiting(%{ true: ad_kw, ads_json: ads}) do
-    # 1. delete old files
-    delete_old_images(ads)
-    # + 2. copy new ones
-    # + 3. create resized version
-    apply_changes(ad_kw, :update)
-    ad_kw
-    # 4. push update to the given section on the frontend
-  end
-
-  # !!!!!!!!!!!!! ezt atgondolni, hogy hgoygan torolni a regieket
-  defp delete_old_images(ads_json) do
-    @ads_json_location
-    |> read_json()
-    |> Enum.each(
-         fn { _store_id, %{ "paths" => paths_with_page_numbers }} ->
-           delete_path(paths_with_page_numbers)
-         end
-       )
-  end
-
-  defp delete_path(paths_with_page_numbers) do
-    Enum.each(
-      paths_with_page_numbers,
-      fn { _page_number, path } ->
-        # delete given path
-        File.rm!(path)
-
-        # delete small version
-        path_root = Path.rootname(path)
-        path_ext  = Path.extname(path)
-        File.rm!(path_root <> "-small" <> path_ext)
       end
     )
   end
 
-  def apply_changes(ad_kw, msg) do
+  # Only  deleting images  that  will be  updated.
+  # `ads.json` will be updated by `process_submitted/2`
+  defp delete_previous_images(
+    %{ "paths" => paths_with_page_numbers }
+  ) do
+    Enum.each(
+      paths_with_page_numbers,
+      fn { page_number, src_path } = x ->
+
+        IO.inspect(x)
+
+        base = Path.basename(src_path) #=> UUID.<img_format>
+        root = Path.rootname(base)     #=> UUID
+
+        # delete full res image
+        @ads_out_dir
+        |> Path.join(base)
+        |> File.rm!()
+
+        # delete small version
+        @ads_out_dir
+        |> Path.join(root)
+        |> (&<>/2).("-small.jpg")
+        |> File.rm!()
+      end
+    )
+  end
+
+  def process_submitted({ store_id, %{ "paths" => paths } = meta }) do
+
+    new_meta =
+      paths  #=> [path_1, ..., path-n]
+      |> copy_images_and_add_page_numbers() #=> ["1" => src_path, ... ]
+      |> (&Map.put(meta, "paths", &1)).()
+
+    %{ store_id => new_meta }
+  end
+
+  defp copy_images_and_add_page_numbers(paths) do
 
     Enum.reduce(
-      ad_kw,
+      paths,
       %{},
-      fn { store_id, %{ "paths" => paths} = meta }, acc_map ->
+      # {%{}, %{}},
+      fn image_path, acc ->
+      # fn image_path, { small, full_res} ->
 
-        # { small_path_maps, full_res_path_maps } =
-        new_paths_with_page_numbers =
-          Enum.reduce(
-            paths,
-            %{},
-            # {%{}, %{}},
-            fn image_path, acc_map ->
-            # fn image_path, { small, full_res} ->
+        new_base_filename = Ecto.UUID.generate()
+        orig_extname      = Path.extname(image_path)
 
-              page_number  =
-                image_path
-                |> Path.basename()
-                |> Path.rootname()
+        new_filename       = new_base_filename <> orig_extname
+        new_filename_small = new_base_filename <> "-small.jpg"
 
-              new_base_filename = Ecto.UUID.generate()
-              orig_extname      = Path.extname(image_path)
-
-              new_filename       = new_base_filename <> orig_extname
-              new_filename_small = new_base_filename <> "-small.jpg"
-
-              File.cp!(
-                image_path,
-                Path.join(@ads_out_dir, new_filename)
-              )
-
-              # https://stackoverflow.com/questions/2257322
-              System.cmd(
-                "magick",
-                [ "convert",
-                  image_path,
-                  "-quality",
-                  "16",
-                  Path.join(@ads_out_dir, new_filename_small)
-                ]
-              )
-
-              # {
-                # Map.put(
-                #   small,
-                #   page_number,
-                #   Path.join(@img_src_attr_prefix, new_filename_small)
-                # ),
-              Map.put(
-                # full_res,
-                acc_map,
-                page_number,
-                Path.join(@img_src_attr_prefix, new_filename)
-              )
-              # }
-            end)
-
-        new_meta =
-          meta
-          |> Map.put("paths", new_paths_with_page_numbers)
-          # |> Map.put("small_paths",    small_path_maps)
-          # |> Map.put("full_res_paths", full_res_path_maps)
-          # |> Map.drop("paths")
-
-        Map.put(
-          acc_map,
-          store_id,
-          new_meta
+        File.cp!(
+          image_path,
+          Path.join(@ads_out_dir, new_filename)
         )
+
+        # https://stackoverflow.com/questions/2257322
+        System.cmd(
+          "magick",
+          [ "convert",
+            image_path,
+            "-quality",
+            "16",
+            Path.join(@ads_out_dir, new_filename_small)
+          ]
+        )
+
+        # {
+          # Map.put(
+          #   small,
+          #   page_number,
+          #   Path.join(@img_src_attr_prefix, new_filename_small)
+          # ),
+        Map.put(
+          # full_res,
+          acc,
+          get_page_number(image_path),
+          Path.join(@img_src_attr_prefix, new_filename)
+        )
+        # }
       end)
-    # |> Jason.encode!()
-    # |> Jason.Formatter.pretty_print()
-    # |> (&File.write(@ads_json_location, &1)).()
+  end
+
+  defp get_page_number(image_path) do
+    page_number  =
+      image_path
+      |> Path.basename()
+      |> Path.rootname()
   end
 
   def read_json(path) do
