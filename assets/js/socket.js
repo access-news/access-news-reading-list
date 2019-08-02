@@ -84,7 +84,7 @@ channel.on("reserve_page", payload => {
   let pageLi = document.getElementById(payload.page_id)
   pageLi.className = "reserved-page"
 
-  let reserveButton = li.querySelector("button")
+  let reserveButton = pageLi.querySelector("button")
   reserveButton.disabled = true
   reserveButton.textContent = "Reserved"
 })
