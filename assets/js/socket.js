@@ -81,7 +81,12 @@ channel.on("load_ads", payload => {
 })
 
 channel.on("reserve_page", payload => {
-  document.getElementById(payload.id).className = "reserved-page"
+  let pageLi = document.getElementById(payload.id)
+  pageLi.className = "reserved-page"
+
+  let reserveButton = li.querySelector("button")
+  reserveButton.disabled = true
+  reserveButton.textContent = "Reserved"
 })
 
 export default socket

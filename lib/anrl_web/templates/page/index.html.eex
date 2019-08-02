@@ -14,10 +14,10 @@
           <span>
             Page <%= page_number %> | 
             <%= link("full resolution image", to: src_path) %> | 
-            <%= link("small image", to: src_small(src_path)) %> | 
+            <%= link("small image", to: src_small(src_path)) %>
             <%# <%= tag(:img, [class: "ad-image", src: src_small(src_path) ]) %1> %>
-            <button value=<%= store_id <> "-" <> page_number %> class="reserve-button">Reserve</button>
           </span>
+          <button value=<%= store_id <> "-" <> page_number %> class="reserve-button">Reserve</button>
         </li>
       <% end %>
 
