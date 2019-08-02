@@ -63,7 +63,7 @@ for (var i = 0; i < reserveButtons.length; i++) {
   reserveButtons[i].addEventListener(
     'click',
     event => {
-      channel.push("reserve_clicked", { id: event.target.value })
+      channel.push("reserve_clicked", { page_id: event.target.value })
     },
     false // this is the default
   );
@@ -81,7 +81,7 @@ channel.on("load_ads", payload => {
 })
 
 channel.on("reserve_page", payload => {
-  let pageLi = document.getElementById(payload.id)
+  let pageLi = document.getElementById(payload.page_id)
   pageLi.className = "reserved-page"
 
   let reserveButton = li.querySelector("button")

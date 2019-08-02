@@ -14,7 +14,7 @@ defmodule Anrl.Application do
       AnrlWeb.Endpoint,
       # Starts a worker by calling: Anrl.Worker.start_link(arg)
       # {Anrl.Worker, arg},
-      Anrl.Ads.Reserve,
+      Anrl.Ads.State,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
