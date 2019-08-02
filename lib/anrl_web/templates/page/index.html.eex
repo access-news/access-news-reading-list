@@ -10,7 +10,10 @@
 
     <ol>
       <%= for { page_number, src_path } <- meta["paths"] do %>
-        <li id=<%= store_id <> "-" <> page_number %>>
+        <li \
+          id=<%= store_id <> "-" <> page_number %> \
+          class=<%= add_if_reserved(meta, page_number) %>
+        >
           <span>
             Page <%= page_number %>
             (
