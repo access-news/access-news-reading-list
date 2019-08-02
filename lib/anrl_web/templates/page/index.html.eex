@@ -12,9 +12,11 @@
       <%= for { page_number, src_path } <- meta["paths"] do %>
         <li id=<%= store_id <> "-" <> page_number %>>
           <span>
-            Page <%= page_number %> | 
-            <%= link("full resolution image", to: src_path) %> | 
-            <%= link("small image", to: src_small(src_path)) %>
+            Page <%= page_number %>
+            (
+            <%= link("large", to: src_path) %>, 
+            <%= link("small", to: src_small(src_path)) %>
+            )
             <%# <%= tag(:img, [class: "ad-image", src: src_small(src_path) ]) %1> %>
           </span>
           <button value=<%= store_id <> "-" <> page_number %> class="reserve-button">Reserve</button>
