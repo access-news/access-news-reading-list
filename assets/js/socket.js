@@ -57,7 +57,7 @@ socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
 let channel = socket.channel("ads:changed", {})
-let reserveButtons = document.getElementsByClassName("reserve-button")
+let reserveButtons = document.getElementsByClassName("reserve_button")
 
 for (var i = 0; i < reserveButtons.length; i++) {
   reserveButtons[i].addEventListener(
@@ -81,12 +81,11 @@ channel.on("load_ads", payload => {
 })
 
 channel.on("reserve_page", payload => {
-  let pageLi = document.getElementById(payload.page_id)
-  pageLi.className = "reserved-page"
+  let span = document.getElementById(payload.page_id)
+  span.className = "reserved_page"
 
-  let reserveButton = pageLi.querySelector("button")
-  reserveButton.disabled = true
-  reserveButton.textContent = "Reserved"
+  let button = span.nextElementSibling
+  button.disabled    = true
 })
 
 export default socket

@@ -1,3 +1,9 @@
+.reserved_page {
+  border-radius: 2% / 50%;
+  background-color: #D59133;
+  color: #002e1b;
+}
+
 button {
   margin-left: 1em;
 }
@@ -7,14 +13,8 @@ ol {
 }
 span {
   padding: 0.5em;
-  border-radius: 2% / 50%;
 }
 
 li {
   padding: 0.5em;
-}
-
-.reserved-page {
-    background-color: #D59133;
-    color: #002e1b;
 }

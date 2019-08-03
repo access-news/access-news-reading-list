@@ -7,10 +7,7 @@ defmodule AnrlWeb.PageView do
     |> (&<>/2).("-small.jpg")
   end
 
-  def add_if_reserved(meta, page_number) do
-    case page_number in meta["reserved_pages"] do
-      true  -> "reserved-page"
-      false -> ""
-    end
+  def reserved?(meta, page_number) do
+    page_number in meta["reserved_pages"]
   end
 end
