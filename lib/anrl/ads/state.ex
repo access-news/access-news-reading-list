@@ -3,7 +3,7 @@ defmodule Anrl.Ads.State do
 
   @ads_json_location   "_ads/ads.json"
 
-  # TODO:
+  # TODO 2019-08-02_1645
   # All state will be lost  on server restart, so set up
   # a strategy to regulary save in file or DB.
   def start_link(_arg) do

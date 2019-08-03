@@ -9,6 +9,29 @@ defmodule Anrl.Ads do
   # Choosing map  as output to be  able to use it  for a
   # JSON API later
 
+  # HISTORICAL NOTE
+  #
+  # Originally, this  was just an  Agent with a  list as
+  # state, and the state map was  saved to a file on the
+  # disk. The purpose  of the agent was  to prevent race
+  # conditions  when  multiple  people  reserve  a  page
+  # almost at the  same time, but the  storing the state
+  # in the file became untenable. The check is the same,
+  # albeit a bit more complex, but when starting to save
+  # to a DB, this can be simplified again.
+
+  # see TODO 2019-08-02_1645
+
+  # TODO 2019-08-02_1646
+  # Implement  the  warning  when  the  close  proximity
+  # reserves happens.  ("We are  sorry, but  someone was
+  # faster at the draw.")
+  #
+  # QUESTION: How can it be tested?
+
+  # TODO 2019-08-02_1647
+  # Expire reserve if no upload in 2 hours. Sounds reasonable I guess.
+
   def reserve(store_id, page_number) do
 
     Agent.get_and_update(
